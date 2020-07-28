@@ -5,7 +5,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email_sheet_handler import EmailSheetHandler
 
-class Emailer:
+class _Emailer:
 
     def __init__(self):
         self.emailHandler = EmailSheetHandler()
@@ -40,7 +40,7 @@ class Emailer:
         with open(self.csv, 'w') as f:
             f.writelines(L)
 
-    def send_mails(self, msg, type="html"):
+    def send_mails(self, msg, debug, type="html"):
 
         mail_index = 0
         for creds in self.emails:
@@ -67,16 +67,18 @@ class Emailer:
                 print(m)
                 message.attach(m)
                 context = ssl.create_default_context()
-                try:
-                    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as server:
-                        server.login(sender_email, password)
-                        server.sendmail( sender_email, reciever_mail, message.as_string() )
-                        logging.info("Mail Sent to : "+reciever_mail)
-                        self.update_file(reciever_mail)
-                except Exception as e:
-                        logging.exception("message")
-                        print("[WARNING] Some exception ....")
-                        print(e)
+                
+                if debug == 0:
+                    try:
+                        with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as server:
+                            server.login(sender_email, password)
+                            server.sendmail( sender_email, reciever_mail, message.as_string() )
+                            logging.info("Mail Sent to : "+reciever_mail)
+                            self.update_file(reciever_mail)
+                    except Exception as e:
+                            logging.exception("message")
+                            print("[WARNING] Some exception ....")
+                            print(e)
             
                 
                 count+=1

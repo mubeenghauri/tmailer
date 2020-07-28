@@ -2,7 +2,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.scrolledtext as scrolledtext
 import logging
-from emailer import Emailer
+from email_handler import _Emailer
 
 
 
@@ -51,7 +51,7 @@ class GoTab(tk.Frame):
 
 
         self.heading = tk.Label(self.config_frame, text="Configurations: ")
-        self.heading.grid(row=0, column=3, sticky="nswes")
+        self.heading.grid(row=0, column=2, sticky="nswes")
 
         self.label1 = tk.Label(self.config_frame, text="Input Type: ")
         self.label1.grid(row=1, column=1)
@@ -73,6 +73,11 @@ class GoTab(tk.Frame):
 
         self.go_button = tk.Button(self, text="GO!", command=self.init)
         self.go_button.grid(row=5, column=3, sticky="nswe")
+
+        self.DEBUG = tk.IntVar()
+        self.DEBUG.set(0)
+        self.test_checkbox = tk.Checkbutton(self.config_frame, text="DEBUG", variable=self.DEBUG )
+        self.test_checkbox.grid(row=5, column=2)
 
         self.log_frame = ttk.Frame(self, width=100, heigh=100, padding=(3, 3, 12, 12))
         self.log_frame.grid(row=1, column=0, sticky="swe")
@@ -96,14 +101,22 @@ class GoTab(tk.Frame):
 
 
     def init(self):
+
+
         logging.info("Initiated")
         logging.info("~ [CONFIG] ~")
         logging.info("[*] Input Type : {}".format(self.config.input_type))
         logging.info("[*] Input Source : {}".format(self.config.source_csv))
         logging.info("[*] Message Type : {}".format(self.config.message_type))
         logging.info("[*] Message Content : {}".format(self.config.message_content))
+        logging.info("[*] DEBUG : {}".format(self.DEBUG.get()))
         logging.info("~ [CONFIG] ~")
-        emailer = Emailer() 
+
+        if self.config.source_csv == '':
+            logging.warning("[WARRNING] NO PATH SUPPLIED FOR TARGET EMAILS !")
+            return
+
+        emailer = _Emailer() 
         emailer.load_emails()
         emailer.load_target_emails(self.config.source_csv)
-        emailer.send_mails(self.config.message_content)
+        emailer.send_mails(self.config.message_content, self.DEBUG)

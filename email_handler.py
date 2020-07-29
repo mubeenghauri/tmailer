@@ -56,7 +56,7 @@ class _Emailer:
             if e in L[i]:
                 print("got line : "+L[i])
                 t = L[i].strip('\n')
-                t += ", SENT\n"
+                t += ",SENT\n"
                 L[i] = t
                 print("updated i : "+L[i])
                 x = i
@@ -126,12 +126,12 @@ class _Emailer:
         sent_count = 0
         for creds in self.emails:
             count = 0
+            sender_email = creds[0]
+            password = creds[1]
             logging.info("[*] Going through : "+creds[0]+" max-mails -> {}".format(creds[2]))
             logging.info("[*] email -> {} pass -> {}".format(sender_email, password))
             while count < int(creds[2]):
                 logging.info("mail_count = {} & count = {} & sent = {} & already_sent = {} & total_mails= {}".format(mail_index, count, sent_count, already_sent, len(self.target_emails) ))
-                sender_email = creds[0]
-                password = creds[1]
                 current = self.target_emails[mail_index]
                 reciever_name = current[0].strip('\n')
                 reciever_mail = current[1].strip('\n')
@@ -141,13 +141,13 @@ class _Emailer:
                     mail_index+=1
                     continue
 
-                if "SENT" in current:
+                if "SENT" in current or " SENT" in current:
                     print("Already sent")
                     logging.info("[INFO] {} :  already sent".format( reciever_mail))
                     already_sent +=1
                     mail_index+=1
                     continue
-                
+
                 logging.info("[*] Got mail : {} , name: {}".format(reciever_mail, reciever_name))
                 message = MIMEMultipart("alternative")
                 message["Subject"] = "Quick Question"

@@ -1,0 +1,9 @@
+dist/
+bin/
+src/
+build/
+*.zip
+*.pyc
+*.csv
+*.txt
+*.log

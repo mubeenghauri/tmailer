@@ -12,15 +12,40 @@ class _Emailer:
     
     def load_emails(self):
         self.emails = self.emailHandler.get_processed_email()
-        for i in self.emails: logging.info("[Emailer] Got email : {}".format(i))
+        # for i in self.emails: logging.info("[Emailer] Got email : {}".format(i))
+
+    def clean(self, file):
+        with open(file, 'r') as f:
+            L = f.readlines()
+
+        cleaned = []
+
+        count = 0
+        for i in L:
+            l = i.strip("\n").split(",")
+            temp = []
+            count += 1
+            
+            for j in l:
+                if len(j) > 2:
+                    temp.append(j)
+            if len(temp)  >= 2:
+                cleaned.append(temp)
+
+
+        with open(file, 'w') as f:
+            for i in cleaned:
+                f.writelines(",".join(i)+"\n")
+
 
     def load_target_emails(self, csv):
+        # self.clean(csv)
         L = []
         self.csv = csv
         with open(csv, 'r') as f:
             L = f.readlines()
         self.target_emails = [i.strip('\n').split(",") for i in L]
-        for i in self.target_emails: logging.info("[Emailer] Got Target email : {}".format(i))
+        # for i in self.target_emails: logging.info("[Emailer] Got Target email : {}, len = {}".format(i, len(i)))
 
     def update_file(self, e):
         L = []
@@ -40,23 +65,89 @@ class _Emailer:
         with open(self.csv, 'w') as f:
             f.writelines(L)
 
-    def send_mails(self, msg, debug, type="html"):
+    
+    # def send_mails_without_name(self, msg, debug, type="html"):
+    #     logging.info("DEBUG = {}".format(debug))
+    #     logging.info("[WIHTOUT NAME] Initializing")
+    #     mail_index = 0
+    #     already_sent = 0
+    #     sent_count = 0
+    #     for creds in self.emails:
+    #         count = 0
+    #         logging.info("[*] Going through : "+creds[0]+" max-mails -> {}".format(creds[2]))
+    #         while count < int(creds[2]):
+    #             logging.info("mail_count = {} & count = {} & sent = {} & already_sent = {} & total_mails= {}".format(mail_index, count, sent_count, already_sent, len(self.target_emails) ))
+    #             sender_email = creds[0]
+    #             password = creds[1]
+    #             logging.info("[*] email -> {} pass -> {}".format(sender_email, password))
+    #             current = self.target_emails[mail_index]
+    #             reciever_mail = current[1].strip('\n')
+    #             if reciever_mail == '' or len(reciever_mail) == 0:
+    #                 logging.info("[WARNING] Skipping invalid bvalues : {}".format(current))
+    #                 mail_index+=1
+    #                 continue
+    #             if "SENT" in current:
+    #                 print("Already sent")
+    #                 logging.info("[INFO] {} :  already sent".format( reciever_mail))
+    #                 already_sent +=1
+    #                 mail_index+=1
+    #                 continue
+    #             logging.info("[*] Got mail : {} ".format(reciever_mail))
+    #             message = MIMEMultipart("alternative")
+    #             message["Subject"] = "Quick Question"
+    #             message["From"] = "Nabeel Ahmad Ghauri"
+    #             message["To"] = reciever_mail
 
+    #             m = MIMEText(msg, 'html')
+    #             # print(m)
+    #             message.attach(m)
+    #             context = ssl.create_default_context()
+                
+    #             if debug == 0:
+    #                 try:
+    #                     with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as server:
+    #                         server.login(sender_email, password)
+    #                         server.sendmail( sender_email, reciever_mail, message.as_string() )
+    #                         logging.info("Mail Sent to : "+reciever_mail)
+    #                         self.update_file(reciever_mail)
+    #                 except Exception as e:
+    #                         logging.exception("message")
+    #                         print("[WARNING] Some exception ....")
+    #                         print(e)
+            
+    #             if debug == 1: logging.info("[*] Sent to : {}".format(current))
+    #             count+=1
+    #             mail_index+=1
+    #             sent_count +=1
+
+    def send_mails(self, msg, debug, type="html"):
         mail_index = 0
+        already_sent = 0
+        sent_count = 0
         for creds in self.emails:
             count = 0
             logging.info("[*] Going through : "+creds[0]+" max-mails -> {}".format(creds[2]))
+            logging.info("[*] email -> {} pass -> {}".format(sender_email, password))
             while count < int(creds[2]):
-                logging.info("mail_count = {} & count = {}".format(mail_index, count))
+                logging.info("mail_count = {} & count = {} & sent = {} & already_sent = {} & total_mails= {}".format(mail_index, count, sent_count, already_sent, len(self.target_emails) ))
                 sender_email = creds[0]
                 password = creds[1]
-                logging.info("[*] email -> {} pass -> {}".format(sender_email, password))
                 current = self.target_emails[mail_index]
                 reciever_name = current[0].strip('\n')
                 reciever_mail = current[1].strip('\n')
-                if reciever_mail == '' or reciever_name == '' or len(reciever_mail) == 0 or len(reciever_name) == 0:
+                
+                if reciever_mail == '' or reciever_name == '' or len(reciever_mail) == 0 or len(reciever_name) == 0 or '@' not in reciever_mail:
+                    logging.info("[WARNING] Skipping invalid values : {}".format(current))
                     mail_index+=1
                     continue
+
+                if "SENT" in current:
+                    print("Already sent")
+                    logging.info("[INFO] {} :  already sent".format( reciever_mail))
+                    already_sent +=1
+                    mail_index+=1
+                    continue
+                
                 logging.info("[*] Got mail : {} , name: {}".format(reciever_mail, reciever_name))
                 message = MIMEMultipart("alternative")
                 message["Subject"] = "Quick Question"
@@ -64,7 +155,6 @@ class _Emailer:
                 message["To"] = reciever_mail
 
                 m = MIMEText(msg.format(reciever_name), 'html')
-                print(m)
                 message.attach(m)
                 context = ssl.create_default_context()
                 
@@ -79,7 +169,8 @@ class _Emailer:
                             logging.exception("message")
                             print("[WARNING] Some exception ....")
                             print(e)
-            
+                else: logging.info("[*] Sent to : {}".format(current))
                 
                 count+=1
                 mail_index+=1
+                sent_count +=1

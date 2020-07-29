@@ -76,9 +76,14 @@ class SetupTab(tk.Frame):
         self.setup_text_message.grid(row=5, column=0, columnspan=5, stick='nw')
         self.setup_text_message.insert('1.0', self.html_message.get())
 
+        self.setup_text_message.bind("<Return>", self.update_message_content)
+
         self.config.set_message_content(self.html_message.get())
         print("Done")
         
+    def update_message_content(self, event):
+        self.config.set_message_content(self.setup_text_message.get("1.0", "end"))
+
     def setup_process_radio(self, w):
         print("here")
         print(w)
@@ -108,13 +113,13 @@ class SetupTab(tk.Frame):
             self.setup_text_message.delete("1.0", "end")
             self.setup_text_message.insert('1.0', self.html_message.get())
             self.config.set_message_type("html")
-            self.config.set_message_contetn(self.html_message.get())
+            self.config.set_message_content(self.html_message.get())
 
         else:
             self.setup_text_message.delete("1.0", "end")
             self.setup_text_message.insert('1.0', self.text_message.get())
             self.config.set_message_type("text")
-            self.config.set_message_contetn(self.text_message.get())
+            self.config.set_message_content(self.text_message.get())
 
         
         

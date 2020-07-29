@@ -3,30 +3,51 @@ import tkinter.ttk as ttk
 import tkinter.scrolledtext as scrolledtext
 import logging
 from email_handler import _Emailer
+import queue
 
 
 
 #https://stackoverflow.com/questions/13318742/python-logging-to-tkinter-text-widget
-class TextHandler(logging.Handler):
-    # This class allows you to log to a Tkinter Text or ScrolledText widget
-    # Adapted from Moshe Kaplan: https://gist.github.com/moshekaplan/c425f861de7bbf28ef06
+# class TextHandler(logging.Handler):
+#     # This class allows you to log to a Tkinter Text or ScrolledText widget
+#     # Adapted from Moshe Kaplan: https://gist.github.com/moshekaplan/c425f861de7bbf28ef06
 
-    def __init__(self, text):
-        # run the regular Handler __init__
-        logging.Handler.__init__(self)
-        # Store a reference to the Text it will log to
-        self.text = text
+#     def __init__(self, text):
+#         # run the regular Handler __init__
+#         logging.Handler.__init__(self)
+#         # Store a reference to the Text it will log to
+#         self.text = text
+
+#     def emit(self, record):
+#         msg = self.format(record)
+     
+#         def append():
+#             self.text.configure(state='normal')
+#             try:
+#                 self.text.insert(tk.END, msg + '\n')
+#                 self.text.configure(state='disabled')
+#                 # Autoscroll to the bottom
+#                 self.text.yview(tk.END)
+#             except tk.TclError:
+#                 # logging.info("[ERROR] writing to log")
+#                 pass
+            
+#         # This is necessary because we can't modify the Text from other threads
+    
+#         self.text.after(0, append)
+
+class QueueHandler(logging.Handler):
+    """Class to send logging records to a queue
+
+    It can be used from different threads
+    """
+
+    def __init__(self, log_queue):
+        super().__init__()
+        self.log_queue = log_queue
 
     def emit(self, record):
-        msg = self.format(record)
-        def append():
-            self.text.configure(state='normal')
-            self.text.insert(tk.END, msg + '\n')
-            self.text.configure(state='disabled')
-            # Autoscroll to the bottom
-            self.text.yview(tk.END)
-        # This is necessary because we can't modify the Text from other threads
-        self.text.after(0, append)
+        self.log_queue.put(record)
 
 class GoTab(tk.Frame):
     def __init__(self, master, config):
@@ -79,6 +100,12 @@ class GoTab(tk.Frame):
         self.test_checkbox = tk.Checkbutton(self.config_frame, text="DEBUG", variable=self.DEBUG )
         self.test_checkbox.grid(row=5, column=2)
 
+        self.WITHOUT_NAME = tk.IntVar()
+        self.WITHOUT_NAME.set(0)
+        self.without_name_checkbox = tk.Checkbutton(self.config_frame, text="Without email", variable=self.WITHOUT_NAME )
+        self.without_name_checkbox.grid(row=6, column=2)
+
+
         self.log_frame = ttk.Frame(self, width=100, heigh=100, padding=(3, 3, 12, 12))
         self.log_frame.grid(row=1, column=0, sticky="swe")
 
@@ -88,8 +115,8 @@ class GoTab(tk.Frame):
 
 
         #Create textLogger
-        text_handler = TextHandler(self.st)
-
+        self.log_queue = queue.Queue()
+        self.queue_handler = QueueHandler(self.log_queue)
         # Logging configuration
         logging.basicConfig(filename='logs.log',
             level=logging.INFO, 
@@ -97,12 +124,34 @@ class GoTab(tk.Frame):
 
         # Add the handler to logger
         logger = logging.getLogger()        
-        logger.addHandler(text_handler)
+        logger.addHandler(self.queue_handler)
+        self.log_frame.after(100, self.poll_log_queue)
+        
+
+    def display(self, record):
+        try:
+            msg = self.queue_handler.format(record)
+            self.st.configure(state='normal')
+            self.st.insert(tk.END, msg + '\n', record.levelname)
+            self.st.configure(state='disabled')
+            # Autoscroll to the bottom
+            self.st.yview(tk.END)
+        except tk.TclError:
+            print("[ERROR LOGGING] {}".format(record))
+
+    def poll_log_queue(self):
+        # Check every 100ms if there is a new message in the queue to display
+        while True:
+            try:
+                record = self.log_queue.get(block=False)
+            except queue.Empty:
+                break
+            else:
+                self.display(record)
+        self.log_frame.after(100, self.poll_log_queue)
 
 
     def init(self):
-
-
         logging.info("Initiated")
         logging.info("~ [CONFIG] ~")
         logging.info("[*] Input Type : {}".format(self.config.input_type))
@@ -119,4 +168,9 @@ class GoTab(tk.Frame):
         emailer = _Emailer() 
         emailer.load_emails()
         emailer.load_target_emails(self.config.source_csv)
-        emailer.send_mails(self.config.message_content, self.DEBUG)
+
+        # if self.WITHOUT_NAME.get() == 1:
+        #     logging.info("[*] Sending without name ..")
+        #     emailer.send_mails_without_name(self.config.message_content, self.DEBUG.get())
+        # else:
+        emailer.send_mails(self.config.message_content, self.DEBUG.get())

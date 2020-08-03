@@ -32,12 +32,9 @@ class MainApp(tk.Frame):
         self.emailTab = EmailTab(nb)
         self.goTab = GoTab(nb, self.configuration)
 
-        
-
     def initGoTab(self, event):
         pass
 
-        
     def configure_gui(self):
         self.master.title("Emailer")
         self.master.geometry("900x500") 

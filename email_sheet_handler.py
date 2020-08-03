@@ -9,7 +9,7 @@ class EmailSheetHandler:
         return os.path.exists(file)
     
     def isCSV(self, file):
-        print("[isCSV] "+file+" : ", ("csv" in file))
+        # print("[isCSV] "+file+" : ", ("csv" in file))
         return "csv" in file
 
     def append_to_file(self, data):

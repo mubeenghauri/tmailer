@@ -2,7 +2,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.scrolledtext as scrolledtext
 import logging
-from email_handler import _Emailer
+from email_handler import ThreadedEmaler
 import queue
 
 
@@ -125,7 +125,7 @@ class GoTab(tk.Frame):
         # Add the handler to logger
         logger = logging.getLogger()        
         logger.addHandler(self.queue_handler)
-        self.log_frame.after(100, self.poll_log_queue)
+        self.log_frame.after(20, self.poll_log_queue)
         
 
     def display(self, record):
@@ -148,7 +148,7 @@ class GoTab(tk.Frame):
                 break
             else:
                 self.display(record)
-        self.log_frame.after(100, self.poll_log_queue)
+        self.log_frame.after(25, self.poll_log_queue)
 
 
     def init(self):
@@ -165,7 +165,7 @@ class GoTab(tk.Frame):
             logging.warning("[WARRNING] NO PATH SUPPLIED FOR TARGET EMAILS !")
             return
 
-        emailer = _Emailer() 
+        emailer = ThreadedEmaler(self.config.message_content, self.DEBUG.get()) 
         emailer.load_emails()
         emailer.load_target_emails(self.config.source_csv)
 
@@ -173,4 +173,4 @@ class GoTab(tk.Frame):
         #     logging.info("[*] Sending without name ..")
         #     emailer.send_mails_without_name(self.config.message_content, self.DEBUG.get())
         # else:
-        emailer.send_mails(self.config.message_content, self.DEBUG.get())
+        emailer.start()

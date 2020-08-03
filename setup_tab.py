@@ -121,11 +121,4 @@ class SetupTab(tk.Frame):
             self.config.set_message_type("text")
             self.config.set_message_content(self.text_message.get())
 
-        
-        
-
-
         print(self.setup_text_message.get("1.0", "end"))
-
-    def get_hello(self):
-        return "Hello"

@@ -85,8 +85,8 @@ class SetupTab(tk.Frame):
         self.config.set_message_content(self.setup_text_message.get("1.0", "end"))
 
     def setup_process_radio(self, w):
-        print("here")
-        print(w)
+        # print("here")
+        # print(w)
         if self.setup_radio_choice.get() == 1 :
             self.setup_label2['text'] = "Source for CSV"
             self.setup_file_loc.grid_forget()
@@ -106,7 +106,7 @@ class SetupTab(tk.Frame):
         self.config.set_source_csv(file.name)
 
     def change_message_type(self):
-        print(self.setup_message_choice.get())
+        # print(self.setup_message_choice.get())
         if self.setup_message_choice.get() == 1:
             ### html
             print("in html  {}".format(self.html_message.get()))

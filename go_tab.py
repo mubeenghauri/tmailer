@@ -168,9 +168,4 @@ class GoTab(tk.Frame):
         emailer = ThreadedEmaler(self.config.message_content, self.DEBUG.get()) 
         emailer.load_emails()
         emailer.load_target_emails(self.config.source_csv)
-
-        # if self.WITHOUT_NAME.get() == 1:
-        #     logging.info("[*] Sending without name ..")
-        #     emailer.send_mails_without_name(self.config.message_content, self.DEBUG.get())
-        # else:
         emailer.start()

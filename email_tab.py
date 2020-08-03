@@ -120,8 +120,11 @@ class EmailTab(tk.Frame):
 
     def populate_sheet(self):
         self.data = []
-        with open(FILENAME, 'r') as f:
-            L = f.readlines()
-        self.data = [i.strip("\n").split(",") for i in L]
-        # for i in self.data: i.append("50")
-        return self.data
+        try:
+            with open(FILENAME, 'r') as f:
+                L = f.readlines()
+            self.data = [i.strip("\n").split(",") for i in L]
+            # for i in self.data: i.append("50")
+            return self.data
+        except FileNotFoundError:
+            return self.data

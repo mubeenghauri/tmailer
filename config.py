@@ -11,7 +11,12 @@ class Configuration:
         self.source_csv = ""
         self.message_type = "html" # by default
         self.message_content = "" 
+        self.subject_line = ""
     
+    def set_subject_line(self, s):
+        print("[config] subject line updated: "+s)
+        self.subject_line = s
+
     def set_input_type(self, t):
         print("Configuration Updated")
         # logging.info("[CONFIIGURATION][INPUT TYPE] Changed to : {}".format(t))
@@ -45,3 +50,6 @@ class Configuration:
     
     def get_message_content(self):
         return self.message_content
+
+    def get_subject_line(self):
+        return self.subject_line

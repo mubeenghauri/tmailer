@@ -17,14 +17,13 @@ class MainApp(tk.Frame):
 
     def create_notebook(self, master):
         self.notebook = ttk.Notebook(master)
-        self.notebook.pack()
         self.init_tabs(self.notebook)
         self.notebook.add(self.setupTab, text="Setup")
         self.notebook.add(self.emailTab, text="Email",)
         self.notebook.add(self.goTab, text="GO !")
         self.notebook.enable_traversal()
         self.notebook.grid( row=1, column=1)
-        # self.notebook.bind("<<NotebookTabChanged>>", self.initGoTab)
+        self.notebook.bind("<<NotebookTabChanged>>", self.initGoTab)
 
     def init_tabs(self, nb):
         self.setupTab = tk.Frame(nb, width=600, height=500, padx=50)
@@ -33,7 +32,9 @@ class MainApp(tk.Frame):
         self.goTab = GoTab(nb, self.configuration)
 
     def initGoTab(self, event):
-        pass
+        # print("[*] Notebook changed", event)
+        self.goTab.__init__(self.notebook, self.configuration)
+        self.master.update_idletasks()
 
     def configure_gui(self):
         self.master.title("Emailer")

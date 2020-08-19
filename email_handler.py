@@ -65,11 +65,12 @@ class _Emailer:
 
 class ThreadedEmaler(Thread, _Emailer):
     """ Thread wrapper for Emailer. """
-    def __init__(self, msg, debug):
+    def __init__(self, msg, subject, debug):
         Thread.__init__(self)
         _Emailer.__init__(self)
         self.msg = msg 
         self.debug = debug
+        self.subject = subject
 
     def run(self):
         mail_index = 0
@@ -101,7 +102,7 @@ class ThreadedEmaler(Thread, _Emailer):
 
                 logging.info("[*] Got mail : {} , name: {}".format(reciever_mail, reciever_name))
                 message = MIMEMultipart("alternative")
-                message["Subject"] = "Quick Question"
+                message["Subject"] = self.subject
                 message["From"] = "Nabeel Ahmad Ghauri"
                 message["To"] = reciever_mail
 

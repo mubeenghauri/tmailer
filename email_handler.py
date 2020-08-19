@@ -82,12 +82,19 @@ class ThreadedEmaler(Thread, _Emailer):
             password = creds[1]
             logging.info("[*] Going through : "+creds[0]+" max-mails -> {}".format(creds[2]))
             logging.info("[*] email -> {} pass -> {}".format(sender_email, password))
-            while count < int(creds[2]):
+            while count < int(creds[2]) and mail_index < len(self.target_emails):
                 logging.info("mail_count = {} & count = {} & sent = {} & already_sent = {} & total_mails= {}".format(mail_index, count, sent_count, already_sent, len(self.target_emails) ))
-                current = self.target_emails[mail_index]
-                reciever_name = current[0].strip('\n')
-                reciever_mail = current[1].strip('\n')
                 
+                try:
+                    current = self.target_emails[mail_index]
+                    reciever_name = current[0].strip('\n')
+                    reciever_mail = current[1].strip('\n')
+                except IndexError:
+                    logging.warning("[WARNING] invalid entry : {}".format(current))
+                    print("[WARNING] invalid entry : {}".format(current))
+                    mail_index+=1
+                    continue
+
                 if reciever_mail == '' or reciever_name == '' or len(reciever_mail) == 0 or len(reciever_name) == 0 or '@' not in reciever_mail:
                     logging.info("[WARNING] Skipping invalid values : {}".format(current))
                     mail_index+=1
@@ -102,7 +109,7 @@ class ThreadedEmaler(Thread, _Emailer):
 
                 logging.info("[*] Got mail : {} , name: {}".format(reciever_mail, reciever_name))
                 message = MIMEMultipart("alternative")
-                message["Subject"] = self.subject
+                message["Subject"] = self.subject.format(reciever_name)
                 message["From"] = "Nabeel Ahmad Ghauri"
                 message["To"] = reciever_mail
 

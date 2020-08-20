@@ -11,7 +11,7 @@ class Configuration:
         self.source_csv = ""
         self.message_type = "html" # by default
         self.message_content = "" 
-        self.subject_line = ""
+        self.subject_line = "Quick Question"
     
     def set_subject_line(self, s):
         print("[config] subject line updated: "+s)

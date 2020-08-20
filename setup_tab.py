@@ -14,7 +14,7 @@ class SetupTab(tk.Frame):
         """)
 
         self.subject_line = tk.StringVar()
-        self.subject_line.set("Quick Question")
+        self.subject_line.set(self.config.subject_line)
         self.html_message = tk.StringVar()
         self.html_message.set("""\
 <html>

@@ -6,7 +6,6 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email_sheet_handler import EmailSheetHandler
 
-
 class _Emailer:
     """ Manage sending emails. """
     def __init__(self):
@@ -36,7 +35,11 @@ class _Emailer:
                 f.writelines(",".join(i)+"\n")
 
     def load_target_emails(self, csv):
-        # self.clean(csv)
+        """ @param csv: path to csv file """
+        
+        if csv == "" or csv == None:
+            raise FileNotFoundError
+
         L = []
         self.csv = csv
         with open(csv, 'r') as f:
@@ -135,4 +138,6 @@ class ThreadedEmaler(Thread, _Emailer):
                 count+=1
                 mail_index+=1
                 sent_count +=1
+                
+            if mail_index >= len(self.target_emails): break
         logging.info( "[DONE] Finished Sending mails !" )

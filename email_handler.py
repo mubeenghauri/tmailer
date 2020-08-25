@@ -1,6 +1,8 @@
 import time
 import logging
+import datetime
 import smtplib, ssl
+import requests
 from threading import Thread
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -75,6 +77,29 @@ class ThreadedEmaler(Thread, _Emailer):
         self.debug = debug
         self.subject = subject
 
+    def notifyApi(self, to, frm, name, date):
+        param = {
+            "to": to,
+            "from" : frm,
+            "name" : name,
+            "date" : date
+        }
+        headers = {
+            'User-Agent': "TmailerPy/0.1",
+            'Accept': "application/json",
+            'Cache-Control': "no-cache",
+            'Host': "api.jumpstartsol.com",
+            'Accept-Encoding': "gzip, deflate",
+            'Content-Length': "0",
+            'Connection': "keep-alive",
+            'cache-control': "no-cache"
+        }
+        logging.info("[notifyApi] Notifying Api with : {}".format(param))
+        r = requests.post('http://api.jumpstartsol.com/api/sent', json=param, headers=headers)
+        logging.info("[notifyApi] Response code from api = {}".format(r))
+        if r.status_code != 200:
+            logging.warning("[notifyApi][WARNING] error in notify request : {}".format(r.text))
+
     def run(self):
         mail_index = 0
         already_sent = 0
@@ -90,8 +115,8 @@ class ThreadedEmaler(Thread, _Emailer):
                 
                 try:
                     current = self.target_emails[mail_index]
-                    reciever_name = current[0].strip('\n')
-                    reciever_mail = current[1].strip('\n')
+                    reciever_name = current[0].strip('\n').strip(" ")
+                    reciever_mail = current[1].strip('\n').strip(" ")
                 except IndexError:
                     logging.warning("[WARNING] invalid entry : {}".format(current))
                     print("[WARNING] invalid entry : {}".format(current))
@@ -116,7 +141,7 @@ class ThreadedEmaler(Thread, _Emailer):
                 message["From"] = "Nabeel Ahmad Ghauri"
                 message["To"] = reciever_mail
 
-                m = MIMEText(self.msg.format(reciever_name), 'html')
+                m = MIMEText(self.msg.format(reciever_name, reciever_mail, sender_email, reciever_name, str(datetime.date.today())), 'html')
                 message.attach(m)
                 context = ssl.create_default_context()
                 
@@ -126,6 +151,7 @@ class ThreadedEmaler(Thread, _Emailer):
                             server.login(sender_email, password)
                             server.sendmail( sender_email, reciever_mail, message.as_string() )
                             logging.info("Mail Sent to : "+reciever_mail)
+                            self.notifyApi(reciever_mail, sender_email, reciever_name, str(datetime.date.today()))
                             self.update_file(reciever_mail)
                     except Exception as e:
                             logging.exception("message")

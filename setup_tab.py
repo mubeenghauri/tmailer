@@ -20,7 +20,7 @@ class SetupTab(tk.Frame):
 <html>
 <body>
 <p>
-    Hey {},<br> 
+    Hey {0},<br> 
     <br>
     Do you have capacity for more leads?<br>
     <br>
@@ -29,7 +29,7 @@ class SetupTab(tk.Frame):
     Regards,<br>
     Nabeel    
 </p>
-<img src="" width="1" height="1">
+ <img src="http://api.jumpstartsol.com/api/opened?to={1}&from={2}&name={3}&date={4}" width="1" height="1">
 <body>
 </html>
         """)
